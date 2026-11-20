@@ -18,6 +18,8 @@ All lengths in mm. Bambu Lab A1 mini build volume: 180 x 180 x 180.
   repair   in.stl out.stl                          merge verts, fix normals, fill holes
   convert  in.(obj|3mf|ply|off|step|stp) out.stl
   preview  in.stl out.png [--view iso|top|front]   OpenSCAD render for a quick visual check
+  firstlayer in.(stl|3mf) [--d 5]                  pre-print adhesion check: bed contact, thin tips/fingers
+                                                   narrower than --d mm, islands starting mid-air -> brim/support advice
 """
 import argparse, os, subprocess, sys, tempfile
 import numpy as np
@@ -74,6 +76,44 @@ def place_text(m, a):
             zt -= 0.01  # tiny overlap so union fuses
     t.apply_translation((x - (t.bounds[0][0] + t.bounds[1][0]) / 2, y - (t.bounds[0][1] + t.bounds[1][1]) / 2, zt))
     return t
+
+
+def first_layer(m, narrow=5.0):
+    """Bed-adhesion risk report. Thin, sharp features in the first layer (leaf tips, fingers, spikes)
+    lift and curl; the nozzle then drags them into spaghetti. The printer does not detect this."""
+    from shapely.geometry import Polygon
+    from shapely.ops import unary_union
+    m = drop(m.copy()); h = m.extents[2]
+    sec = m.section(plane_origin=(0, 0, 0.1), plane_normal=(0, 0, 1))
+    out = {"height_mm": round(float(h), 2)}
+    if sec is None:
+        print("no geometry at z=0.1: model is not on the bed"); return
+    p2, _ = sec.to_2D(to_2D=np.eye(4))  # keep bed XY coordinates
+    polys = [Polygon(q.exterior.coords, [i.coords for i in q.interiors]) for q in p2.polygons_full]
+    P = unary_union(polys); area = P.area
+    r = narrow / 2.0
+    opened = P.buffer(-r).buffer(r)
+    thin = P.difference(opened.buffer(0.05))
+    parts = [g for g in getattr(thin, "geoms", [thin]) if g.area > 2.0]
+    tips = sorted(parts, key=lambda g: -g.area)
+    out.update(contact_mm2=round(area, 1), islands=len(polys), thin_features=len(tips),
+               thin_area_mm2=round(sum(g.area for g in tips), 1), thin_share=round(sum(g.area for g in tips) / area, 3) if area else 0)
+    # downward faces above the bed = areas that start in mid-air
+    n = m.face_normals; c = m.triangles_center; A = m.area_faces
+    air = (n[:, 2] < -0.707) & (c[:, 2] > 0.5)
+    out["overhang_gt45_mm2"] = round(float(A[air].sum()), 1)
+    out["height_to_contact"] = round(float(h / max(np.sqrt(area), 1e-6)), 2)
+    for k, v in out.items(): print(f"{k}: {v}")
+    for g in tips[:8]:
+        print(f"  thin feature at X{g.centroid.x:.0f} Y{g.centroid.y:.0f} (mesh coords): {g.area:.1f} mm2")
+    adv = []
+    if tips: adv.append("brim_type=outer_only (auto_brim often adds NO brim for PLA on Textured PEI)")
+    if tips or out["height_to_contact"] > 1.5: adv.append("initial_layer_speed=30 (mm/s), keep initial_layer_print_height=0.2")
+    if out["height_to_contact"] > 2.5: adv.append("tall on a small footprint: brim_type=outer_only, brim_width=8")
+    if out["overhang_gt45_mm2"] > 50: adv.append("check support: enable_support=1 support_type=tree(auto) (or confirm the designer's no-support intent in the preview)")
+    if tips: adv.append("tell the user: wash the plate with dish soap, dry, do not touch it; watch the first 3 layers")
+    print("ADVICE:" if adv else "ADVICE: none, adhesion risk low")
+    for x in adv: print("  -", x)
 
 
 def main():
@@ -160,6 +200,8 @@ def main():
                         cams.get(a.view, cams["iso"]), "--imgsize=900,700", "--colorscheme=Tomorrow", s],
                        check=True, capture_output=True)
         print("wrote", P[1])
+    elif c == "firstlayer":
+        first_layer(load(P[0]), float(a.d or 5))
     else:
         sys.exit(__doc__)
 

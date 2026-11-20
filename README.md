@@ -64,6 +64,7 @@ scripts/bambu_slice.py           model(s) -> sliced, GUI-safe .gcode.3mf + JSON 
 scripts/bambu_profiles.py        list / show / flatten Bambu Studio presets
 scripts/fix_3mf.py               repair CLI-written 3MF for the GUI
 scripts/mesh_tools.py            remix toolkit (trimesh + manifold3d, OpenSCAD for text/preview)
+                                 + `firstlayer`: pre-print adhesion check (thin tips -> brim advice)
 templates/*.scad                 verified parametric starting points
 setup.sh                         dependencies + sanity slice
 ```

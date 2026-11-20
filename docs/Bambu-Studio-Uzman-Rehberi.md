@@ -72,6 +72,8 @@ $B --load-settings "machine.json;process.json" \
    STL mevcut projeye eklenir, 3MF proje olarak açılır.
 9. `--orient 1` modeli kendi kafasına göre çevirir; tasarımı baskı yönünde yaptıysan `--orient 0` bırak.
 10. Çıkış kodu 0 değilse `result.json` içindeki `error_string` ve log'daki `[error]` satırları sebebi söyler. Yaygın kodlar: 239 uyumsuz profil, 206 boş tabla, 243 dosya yazılamadı.
+11. **CLI ile yeniden dilimlenen 3MF GUI'de açılınca bazı `--set` değerleri kaybolabiliyor.** Gerçek örnek: `wall_loops=4`, `bottom_shell_layers=5`, `sparse_infill_density=25%`, `gyroid` dosyada yazılıydı ama GUI 2 / 4 / %15 / ızgara gösterdi. Açtıktan sonra Dayanıklılık sekmesini kontrol et, alanları elle düzelt, GUI'de dilimle ve gramı CLI sonucuyla karşılaştır.
+12. **Birden çok Bambu Studio örneği çalışabilir.** "Şu an açık olan" tasarım için `BambuStudio.conf` içindeki `recent_projects` ve dosyanın değişiklik saatine bak, sonra ekran görüntüsüyle doğrula.
 
 ### 4.3 Çıktıyı okumak
 
@@ -129,7 +131,10 @@ $P $M boolean a.stl b.stl out.stl --op union --move-b 0,0,10
 $P $M repair bozuk.stl temiz.stl
 $P $M convert model.step model.stl                     # STEP/OBJ/3MF/PLY -> STL
 $P $M preview model.stl onizleme.png --view iso        # görsel kontrol
+$P $M firstlayer model.3mf [--d 5]                     # baskı öncesi tutunma kontrolü: ince uçlar, havada başlayan bölgeler, brim önerisi
 ```
+
+`firstlayer` tablaya değen ilk katman kesitini çıkarır ve `--d` mm'den (varsayılan 5) dar uçları bulur. Yaprak ucu, parmak, sivri köşe gibi uçlar ilk katmanlarda kalkar, nozul onları sürükleyip örümcek ağına çevirir; yazıcı bunu fark etmez. İnce uç varsa ADVICE `brim_type=outer_only` ve `initial_layer_speed=30` önerir.
 
 ## 6. Sıfırdan tasarım
 
@@ -253,6 +258,17 @@ osascript -e 'tell application "System Events" to tell process "BambuStudio" to 
 6. `bambu_slice.py ... --open` ile dilimle ve GUI'de aç.
 7. Süre/gram raporunu kullanıcıya ver, onay gelirse gönder.
 
+### C. Baskı öncesi kontrol listesi (her baskıda)
+
+1. Açık tasarımı doğru tespit et (`recent_projects` + dosya saati + ekran görüntüsü).
+2. Tasarımcının ayarlarını oku (`project_settings.config`, `slice_info.config`), değişiklikleri tasarımcı vs yeni tablosuyla raporla.
+3. İşlevsel parçada dayanıklılık: 4 duvar, %25 jiroid, üst/alt 6/5. Çoğu zaman sadece +%10-20 gram.
+4. `mesh_tools.py firstlayer` çalıştır; ince uç varsa `brim_type=outer_only`, `initial_layer_speed=30`. `auto_brim` PLA + Dokulu PEI'de genelde hiç brim basmaz.
+5. GUI'de aç, Dayanıklılık sekmesindeki değerleri doğrula, GUI'de dilimle, gramı karşılaştır, kaydet.
+6. Cihaz sekmesinde yazıcı boşta mı, kullanıcının istediği AMS yuvası (ör. A3 yeşil) eşleşmiş mi bak.
+7. Gönder penceresinde yatak düzleme açık; "yüzey kusuru" uyarısı gelirse hızlandırılmış çekimi kapat.
+8. Kullanıcıya ilk 3 katmanı izlemesini söyle; tabla bulaşık deterjanıyla yıkanmış ve kurumuş olsun.
+
 ### B. "Sıfırdan şunu tasarla"
 
 1. İhtiyacı ölçülere çevir (ne tutacak, hangi ölçüler, hangi malzeme, kaç renk). Eksik kritik ölçü varsa sor.
@@ -274,6 +290,10 @@ osascript -e 'tell application "System Events" to tell process "BambuStudio" to 
 | Her açılışta yeni pencere | `open -a` | AppleScript `open POSIX file` |
 | Mesh `watertight=False` | Açık yüzey | `mesh_tools.py repair`, olmazsa Bambu Studio'da sağ tık > Onar |
 | OpenSCAD yavaş | CGAL motoru | `--backend=manifold` |
+| İnce uç (yaprak ucu, sivri köşe) ilk katmanlarda kalkıp örümcek ağı gibi iplik oluyor, yazıcı hata vermiyor | Uç tablaya az alanla değiyor, kalkınca nozul sürüklüyor; A1 mini kalkan ucu algılamaz | Baskı devam edebilir, uç sonradan temizlenir. Sonraki baskıda `firstlayer` kontrolü, `brim_type=outer_only`, `initial_layer_speed=30`, tablayı deterjanla yıka |
+| GUI'deki değerler CLI'de verdiğin `--set` değerlerinden farklı | Yeniden açılan 3MF'te GUI bazı değerleri ön ayardan okuyor | GUI'de elle düzelt, GUI'de dilimle, gramı karşılaştır |
+| "Anlık hızlandırılmış çekim yüzey kusuru" uyarısı | Timelapse açık | Gönder penceresinde Hızlandırılmış çekim: Off |
+| Tıklama başka uygulamaya gidiyor | Önde başka pencere (ör. Word) | Yeni ekran görüntüsü al, tekrar tıkla |
 
 ## 12. Güvenlik ve sınırlar
 
