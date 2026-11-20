@@ -1,0 +1,10 @@
+trimesh
+manifold3d
+numpy
+scipy
+networkx
+lxml
+shapely
+mapbox_earcut
+rtree
+build123d

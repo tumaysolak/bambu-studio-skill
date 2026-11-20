@@ -1,0 +1,8 @@
+.venv/
+test/
+templates/out/
+*.log
+__pycache__/
+*.gcode
+*.gcode.3mf
+.DS_Store
