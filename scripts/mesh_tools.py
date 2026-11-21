@@ -106,12 +106,22 @@ def first_layer(m, narrow=5.0):
     for k, v in out.items(): print(f"{k}: {v}")
     for g in tips[:8]:
         print(f"  thin feature at X{g.centroid.x:.0f} Y{g.centroid.y:.0f} (mesh coords): {g.area:.1f} mm2")
+    span = float(max(m.extents[0], m.extents[1]))
+    out["footprint_span_mm"] = round(span, 1)
+    print(f"footprint_span_mm: {out['footprint_span_mm']}")
     adv = []
+    warp = span > 120 or area > 3000
+    if warp:
+        adv.append(f"LARGE FOOTPRINT ({span:.0f} mm): corners lift (real failure: ball holder, Nov 2026) -> raft_layers=3 "
+                   "(or brim_type=outer_only brim_width=8 if raft scars matter); keep >=8 mm free around the part for it")
     if tips: adv.append("brim_type=outer_only (auto_brim often adds NO brim for PLA on Textured PEI)")
-    if tips or out["height_to_contact"] > 1.5: adv.append("initial_layer_speed=30 (mm/s), keep initial_layer_print_height=0.2")
+    if tips or warp or out["height_to_contact"] > 1.5:
+        adv.append("initial_layer_speed=30, initial_layer_infill_speed=50 (mm/s), keep initial_layer_print_height=0.2")
     if out["height_to_contact"] > 2.5: adv.append("tall on a small footprint: brim_type=outer_only, brim_width=8")
-    if out["overhang_gt45_mm2"] > 50: adv.append("check support: enable_support=1 support_type=tree(auto) (or confirm the designer's no-support intent in the preview)")
-    if tips: adv.append("tell the user: wash the plate with dish soap, dry, do not touch it; watch the first 3 layers")
+    if out["overhang_gt45_mm2"] > 50:
+        adv.append("SUPPORT: enable_support=1 support_type=tree(auto) support_on_build_plate_only=1 "
+                   "(check the preview; only skip if the designer printed it support-free AND the overhang is just a low lip)")
+    if tips or warp: adv.append("tell the user: wash the plate with dish soap, dry, do not touch it; watch the first 3 layers and the corners")
     print("ADVICE:" if adv else "ADVICE: none, adhesion risk low")
     for x in adv: print("  -", x)
 

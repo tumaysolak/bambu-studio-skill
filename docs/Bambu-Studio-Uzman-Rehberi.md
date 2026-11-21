@@ -263,7 +263,12 @@ osascript -e 'tell application "System Events" to tell process "BambuStudio" to 
 1. Açık tasarımı doğru tespit et (`recent_projects` + dosya saati + ekran görüntüsü).
 2. Tasarımcının ayarlarını oku (`project_settings.config`, `slice_info.config`), değişiklikleri tasarımcı vs yeni tablosuyla raporla.
 3. İşlevsel parçada dayanıklılık: 4 duvar, %25 jiroid, üst/alt 6/5. Çoğu zaman sadece +%10-20 gram.
-4. `mesh_tools.py firstlayer` çalıştır; ince uç varsa `brim_type=outer_only`, `initial_layer_speed=30`. `auto_brim` PLA + Dokulu PEI'de genelde hiç brim basmaz.
+4. `mesh_tools.py firstlayer` çalıştır ve önerilerini uygula, otomatiğe bırakma:
+   - ince uç varsa `brim_type=outer_only` (`auto_brim` PLA + Dokulu PEI'de genelde hiç brim basmaz);
+   - taban 120 mm'den genişse ya da temas alanı 3000 mm²'yi geçiyorsa `raft_layers=3` (ya da `brim_type=outer_only`, `brim_width=8`), parçanın çevresinde en az 8 mm boşluk bırak, gerekirse modeli birkaç yüzde küçült;
+   - bu durumların hepsinde `initial_layer_speed=30`, `initial_layer_infill_speed=50`;
+   - 45°'den dik sarkma 50 mm²'yi geçiyorsa `enable_support=1`, `support_type=tree(auto)`, `support_on_build_plate_only=1`.
+   Gerçek örnekler: yaprak ucu kalktı (ince uç); 173 mm'lik top askısı köşeden kalktı, baskı durduruldu, raft + destek + yavaş ilk katmanla tekrar basıldı.
 5. GUI'de aç, Dayanıklılık sekmesindeki değerleri doğrula, GUI'de dilimle, gramı karşılaştır, kaydet.
 6. Cihaz sekmesinde yazıcı boşta mı, kullanıcının istediği AMS yuvası (ör. A3 yeşil) eşleşmiş mi bak.
 7. Gönder penceresinde yatak düzleme açık; "yüzey kusuru" uyarısı gelirse hızlandırılmış çekimi kapat.
@@ -291,6 +296,7 @@ osascript -e 'tell application "System Events" to tell process "BambuStudio" to 
 | Mesh `watertight=False` | Açık yüzey | `mesh_tools.py repair`, olmazsa Bambu Studio'da sağ tık > Onar |
 | OpenSCAD yavaş | CGAL motoru | `--backend=manifold` |
 | İnce uç (yaprak ucu, sivri köşe) ilk katmanlarda kalkıp örümcek ağı gibi iplik oluyor, yazıcı hata vermiyor | Uç tablaya az alanla değiyor, kalkınca nozul sürüklüyor; A1 mini kalkan ucu algılamaz | Baskı devam edebilir, uç sonradan temizlenir. Sonraki baskıda `firstlayer` kontrolü, `brim_type=outer_only`, `initial_layer_speed=30`, tablayı deterjanla yıka |
+| Büyük parça köşeden kalkıyor (warping) | Geniş taban, kenarlar soğurken büzülüyor | `raft_layers=3` ya da 8 mm dış brim, ilk katman 30 mm/s, destek gerekiyorsa tree; tablayı deterjanla yıka |
 | GUI'deki değerler CLI'de verdiğin `--set` değerlerinden farklı | Yeniden açılan 3MF'te GUI bazı değerleri ön ayardan okuyor | GUI'de elle düzelt, GUI'de dilimle, gramı karşılaştır |
 | "Anlık hızlandırılmış çekim yüzey kusuru" uyarısı | Timelapse açık | Gönder penceresinde Hızlandırılmış çekim: Off |
 | Tıklama başka uygulamaya gidiyor | Önde başka pencere (ör. Word) | Yeni ekran görüntüsü al, tekrar tıkla |
