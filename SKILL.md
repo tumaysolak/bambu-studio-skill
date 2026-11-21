@@ -6,7 +6,7 @@ description: Design, remix, slice and prepare 3D prints with Bambu Studio on mac
 # Bambu Studio: design, remix, slice, print
 
 Toolkit repo: https://github.com/tumaysolak/bambu-studio-skill (local clone: `~/bambu-studio-skill`).
-Full Turkish expert guide with every verified detail: `docs/Bambu-Studio-Uzman-Rehberi.md`. Read it when anything below is unclear.
+Full Turkish expert guide with every verified detail: `docs/Bambu-Studio-Uzman-Rehberi.md` (copy also on the Desktop). Read it when anything below is unclear.
 
 ## How to reach the Mac
 
@@ -30,7 +30,7 @@ Paths: `B=/Applications/BambuStudio.app/Contents/MacOS/BambuStudio`, `PY=~/bambu
    - From scratch: write parametric OpenSCAD (`openscad --backend=manifold -o out.stl file.scad`), start from `templates/` when one fits (`name_tag.scad` two-color tag, `box_lid.scad` slip-fit box, `phone_stand.scad`). Use build123d for fillets/STEP-grade mechanical parts.
    - Remix: convert to STL and edit with `$PY scripts/mesh_tools.py` (`info`, `scale --fit/--factor`, `rotate`, `flat`, `cut --z`, `hole --at --d`, `text|textpart`, `boolean`, `repair`, `convert`).
 3. **Verify geometry**: `mesh_tools.py info` (fits 180x180x180, watertight) and `mesh_tools.py preview x.stl x.png`, then look at the PNG. Fix before slicing.
-   Then **always** run `mesh_tools.py firstlayer model.(stl|3mf)` (also for downloaded 3MFs you only re-slice) and apply its ADVICE: thin tips/fingers in the first layer → `brim_type=outer_only` + `initial_layer_speed=30`; big mid-air overhang → check support.
+   Then **always** run `$PY scripts/mesh_tools.py firstlayer model.(stl|3mf)` (also for downloaded 3MFs you only re-slice) and apply every ADVICE line (brim/raft, slow first layer, fan/plate `--fset`, tree support); checklist item 4 has the rules.
 4. **Slice**: `python3 scripts/bambu_slice.py model.stl [--process ...] [--set key=value ...] --out <path>.gcode.3mf --open`
    - Multi-color single design: export each color as its own STL in the same coordinates, then `--assemble --filament F --filament F --color #FFFFFF --color #C12E1F --filament-ids 1,2`.
    - Presets: `python3 scripts/bambu_profiles.py list process --filter A1M` / `list filament --filter A1M`.
