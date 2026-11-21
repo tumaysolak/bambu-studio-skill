@@ -266,13 +266,13 @@ osascript -e 'tell application "System Events" to tell process "BambuStudio" to 
 4. `mesh_tools.py firstlayer` çalıştır ve önerilerini uygula, otomatiğe bırakma:
    - ince uç varsa `brim_type=outer_only` (`auto_brim` PLA + Dokulu PEI'de genelde hiç brim basmaz);
    - taban 120 mm'den genişse ya da temas alanı 3000 mm²'yi geçiyorsa `raft_layers=3` (ya da `brim_type=outer_only`, `brim_width=8`), parçanın çevresinde en az 8 mm boşluk bırak, gerekirse modeli birkaç yüzde küçült;
-   - bu durumların hepsinde `initial_layer_speed=30`, `initial_layer_infill_speed=50`;
+   - bu durumların hepsinde `initial_layer_speed=30`, `initial_layer_infill_speed=50`; filament tarafında ilk 3 katmanda fan kapalı, ilk katmanda tabla +5 °C: `--fset close_fan_the_first_x_layers=3 --fset textured_plate_temp_initial_layer=70` (PLA + Dokulu PEI; G-code'da `M190 S70` sonra `M140 S65` görünür);
    - 45°'den dik sarkma 50 mm²'yi geçiyorsa `enable_support=1`, `support_type=tree(auto)`, `support_on_build_plate_only=1`.
    Gerçek örnekler: yaprak ucu kalktı (ince uç); 173 mm'lik top askısı köşeden kalktı, baskı durduruldu, raft + destek + yavaş ilk katmanla tekrar basıldı.
 5. GUI'de aç, Dayanıklılık sekmesindeki değerleri doğrula, GUI'de dilimle, gramı karşılaştır, kaydet.
 6. Cihaz sekmesinde yazıcı boşta mı, kullanıcının istediği AMS yuvası (ör. A3 yeşil) eşleşmiş mi bak.
 7. Gönder penceresinde yatak düzleme açık; "yüzey kusuru" uyarısı gelirse hızlandırılmış çekimi kapat.
-8. Kullanıcıya ilk 3 katmanı izlemesini söyle; tabla bulaşık deterjanıyla yıkanmış ve kurumuş olsun.
+8. Her gönderimden önce kullanıcıya sor: "Tablayı sildin mi?" (bulaşık deterjanı ya da IPA, kuru, yüzeye parmak değmemiş). Onay gelmeden gönderme; "bas" demek bu onay sayılmaz. Gönderince ilk 3 katmanı ve köşeleri izlemesini söyle.
 
 ### B. "Sıfırdan şunu tasarla"
 

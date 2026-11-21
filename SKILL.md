@@ -35,7 +35,7 @@ Paths: `B=/Applications/BambuStudio.app/Contents/MacOS/BambuStudio`, `PY=~/bambu
    - Multi-color single design: export each color as its own STL in the same coordinates, then `--assemble --filament F --filament F --color #FFFFFF --color #C12E1F --filament-ids 1,2`.
    - Presets: `python3 scripts/bambu_profiles.py list process --filter A1M` / `list filament --filter A1M`.
 5. **Report** to the user: dimensions, material, print time, grams, layers, any warnings, and the 3MF path. The 3MF is already open in Bambu Studio via AppleScript.
-6. **Print only on explicit approval.** In the GUI: Hazırla tab → "Baskı tablasını dilimle" → "Baskı tablasını yazdır" → check printer, AMS slot mapping (match colors to loaded spools in the Cihaz tab), bed leveling → "Gönder". Screenshot each step. If the Cihaz tab shows a print in progress, do not send and never touch pause/stop.
+6. **Print only on explicit approval, and before EVERY send ask the user: "Tablayı sildin mi?"** (dish soap or IPA, dry, no fingers on the surface). Send only after they confirm; a "bas"/"gönder" alone is not that confirmation. Then: In the GUI: Hazırla tab → "Baskı tablasını dilimle" → "Baskı tablasını yazdır" → check printer, AMS slot mapping (match colors to loaded spools in the Cihaz tab), bed leveling → "Gönder". Screenshot each step. If the Cihaz tab shows a print in progress, do not send and never touch pause/stop.
 7. **After sending**: tell the user to watch the first 3 layers. The A1 mini does NOT detect a lifted/curled tip (it only senses flow and collisions), so "machine found no problem" means nothing for adhesion.
 
 ## Pre-print checklist (from a real failed leaf tip, Nov 2026)
@@ -46,10 +46,10 @@ Paths: `B=/Applications/BambuStudio.app/Contents/MacOS/BambuStudio`, `PY=~/bambu
 4. **Adhesion and support are mandatory decisions, never left on auto.** Two real failures: a leaf tip curled (thin tip) and a 173 mm ball holder lifted at a corner and was stopped (large footprint, designer had no raft/support). Before every print, from the `firstlayer` output:
    - thin tips → `brim_type=outer_only` (`auto_brim` often prints NO brim for PLA on Textured PEI);
    - footprint span >120 mm or contact >3000 mm² → `raft_layers=3` (or `brim_type=outer_only`, `brim_width=8` when raft marks matter) and leave ≥8 mm free around the part (scale down a few % if needed);
-   - always with either of the above: `initial_layer_speed=30`, `initial_layer_infill_speed=50`;
+   - always with either of the above: `initial_layer_speed=30`, `initial_layer_infill_speed=50`, and filament overrides `--fset close_fan_the_first_x_layers=3 --fset textured_plate_temp_initial_layer=70` (PLA on Textured PEI: fan off for the first 3 layers, plate +5 °C on the first layer only; verified in G-code: `M190 S70` then `M140 S65`). PETG: plate +5 °C over its preset, fan off 3 layers;
    - overhang >50 mm² → `enable_support=1`, `support_type=tree(auto)`, `support_on_build_plate_only=1`; skip only if the designer printed it support-free and the overhang is a low lip;
    - functional parts near the bed limits: prefer raft + support over saving 10 minutes.
-   Tell the user to wash the plate with dish soap, keep fingers off it and watch the first layers and corners.
+   Tell the user to watch the first layers and corners.
 5. **GUI did not keep all CLI `--set` values** (support, raft and first-layer speeds included) when the re-sliced 3MF was reopened (wall_loops, bottom shells, infill density/pattern fell back). After opening, check the Dayanıklılık tab, fix fields by hand, re-slice in the GUI and compare its grams with the CLI result. Save (cmd+S).
 6. **Send dialog**: confirm the AMS slot the user named (e.g. A3 = green), keep bed leveling on, turn timelapse OFF if the "surface defects" warning appears (unless the user wants a timelapse).
 7. **Computer use**: resolve the app as "BambuStudio" (not "Bambu Studio"). Another app's window (e.g. Word) can sit on top and block a click; take a fresh screenshot and retry.
@@ -64,7 +64,7 @@ Paths: `B=/Applications/BambuStudio.app/Contents/MacOS/BambuStudio`, `PY=~/bambu
 - `--arrange 0` with origin-centred meshes = object off the 0..180 bed (exit 206).
 - Open files in the running app with `osascript -e 'tell application id "com.bambulab.bambu-studio" to open POSIX file "/abs/path"'`; `open -a` spawns extra instances.
 - Keep `--orient 0` when you designed the print orientation yourself.
-- GUI paths: support = Destek tab ("Desteği etkinleştir", "Sadece baskı tablasında", "Raft katmanları"); first-layer speed = Hız tab ("İlk katman", "İlk katman dolgusu"); use the search box (magnifier) instead of scrolling. Raft expansion is not exposed in the GUI. The gear icon next to "Proje Filamentleri" opens the filament PICKER, not filament settings; cancel it.
+- GUI paths: support = Destek tab ("Desteği etkinleştir", "Sadece baskı tablasında", "Raft katmanları"); first-layer speed = Hız tab ("İlk katman", "İlk katman dolgusu"); fan and plate temperature are FILAMENT settings, so set them with `--fset` in the CLI slice (the GUI may drop them on reopen: check the plate temperature shown in the send dialog/G-code); use the search box (magnifier) instead of scrolling. Raft expansion is not exposed in the GUI. The gear icon next to "Proje Filamentleri" opens the filament PICKER, not filament settings; cancel it.
 - Reopened CLI-sliced 3MFs can show preset values instead of your `--set` overrides in the GUI; verify in the GUI before printing (checklist item 5).
 
 ## A1 mini design rules (0.4 nozzle)

@@ -117,11 +117,13 @@ def first_layer(m, narrow=5.0):
     if tips: adv.append("brim_type=outer_only (auto_brim often adds NO brim for PLA on Textured PEI)")
     if tips or warp or out["height_to_contact"] > 1.5:
         adv.append("initial_layer_speed=30, initial_layer_infill_speed=50 (mm/s), keep initial_layer_print_height=0.2")
+        adv.append("filament: --fset close_fan_the_first_x_layers=3 --fset textured_plate_temp_initial_layer=70 "
+                   "(PLA on Textured PEI; +5 C first layer only, fan off for the first 3 layers)")
     if out["height_to_contact"] > 2.5: adv.append("tall on a small footprint: brim_type=outer_only, brim_width=8")
     if out["overhang_gt45_mm2"] > 50:
         adv.append("SUPPORT: enable_support=1 support_type=tree(auto) support_on_build_plate_only=1 "
                    "(check the preview; only skip if the designer printed it support-free AND the overhang is just a low lip)")
-    if tips or warp: adv.append("tell the user: wash the plate with dish soap, dry, do not touch it; watch the first 3 layers and the corners")
+    if tips or warp: adv.append("ASK the user before sending: did you wipe/wash the plate? (dish soap, dry, no fingers); watch the first 3 layers and the corners")
     print("ADVICE:" if adv else "ADVICE: none, adhesion risk low")
     for x in adv: print("  -", x)
 
