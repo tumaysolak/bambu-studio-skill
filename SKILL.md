@@ -64,8 +64,21 @@ Paths: `B=/Applications/BambuStudio.app/Contents/MacOS/BambuStudio`, `PY=~/bambu
 - `--arrange 0` with origin-centred meshes = object off the 0..180 bed (exit 206).
 - Open files in the running app with `osascript -e 'tell application id "com.bambulab.bambu-studio" to open POSIX file "/abs/path"'`; `open -a` spawns extra instances.
 - Keep `--orient 0` when you designed the print orientation yourself.
-- GUI paths: support = Destek tab ("Desteği etkinleştir", "Sadece baskı tablasında", "Raft katmanları"); first-layer speed = Hız tab ("İlk katman", "İlk katman dolgusu"); fan and plate temperature are FILAMENT settings, so set them with `--fset` in the CLI slice (the GUI may drop them on reopen: check the plate temperature shown in the send dialog/G-code); use the search box (magnifier) instead of scrolling. Raft expansion is not exposed in the GUI. The gear icon next to "Proje Filamentleri" opens the filament PICKER, not filament settings; cancel it.
+- GUI paths: support = Destek tab ("Desteği etkinleştir", "Sadece baskı tablasında", "Raft katmanları"); first-layer speed = Hız tab ("İlk katman", "İlk katman dolgusu"); outer wall = Hız tab ("Dış duvar" speed, and "Dış duvar" again under İvme); print order = Diğerleri → Özel mod → "Yazdırma sırası"; fan and plate temperature are FILAMENT settings, so set them with `--fset` in the CLI slice (the GUI may drop them on reopen: check the plate temperature shown in the send dialog/G-code); use the search box (magnifier) instead of scrolling. Raft expansion is not exposed in the GUI. The gear icon next to "Proje Filamentleri" opens the filament PICKER, not filament settings; cancel it.
+- Separate objects in different colors (e.g. one green heart, one white heart): set `print_sequence="by object"` and `enable_prime_tower=0`, or the slicer swaps color every layer (real case: 108 swaps, 4h25m, 68 g vs 58 min, 18 g by object). The GUI may reset it to "Katmana göre" on reopen; check before slicing. By object, the CLI may spread objects over several plates; in the GUI press `a` (arrange) on the 3D view to fit them on one plate.
+- GUI quirks: some dropdowns (e.g. "Yazdırma sırası") open off-screen; click the field, then press Down to step through options. Never type into the window unless a text field has focus: single keys are 3D-view shortcuts (`a` arranges all objects).
+- Several BambuStudio windows/instances may exist and a downloaded 3MF can replace the project in the window you were using; after any pause, confirm the window title before clicking.
 - Reopened CLI-sliced 3MFs can show preset values instead of your `--set` overrides in the GUI; verify in the GUI before printing (checklist item 5).
+
+## Smooth outer surface (verified Nov 2026)
+
+When the user wants a smoother/cleaner visible surface ("daha pürüzsüz dış yüzey"), slow only the outer wall; inner walls and infill stay fast.
+
+- GUI: Hazırla → İşlem → **Hız** → "Diğer katmanların hızı" → **Dış duvar** (A1M presets: 200 mm/s) → 60-100 mm/s; same tab further down → **İvme** → **Dış duvar** (5000 mm/s²) → 2500.
+- CLI: `--set outer_wall_speed=60 --set outer_wall_acceleration=2500` (balanced: 100 / 3000). Keep "Çıkıntılar için yavaşla" (`enable_overhang_speed=1`) on.
+- Measured on a 35 mm heart (0.20 Standard A1M, PLA): 200/5000 = 24m18s, 100/3000 = 24m37s, 60/2500 = 25m11s (+4 %, same grams). G-code check: outer-wall moves go from F12000 to F3600 and `M204 S2500` appears before each outer wall. Small parts cost little because the filament's 6 s minimum layer time already slows them; large parts pay more.
+- Further options, mention as trade-offs: Kalite → Gelişmiş → Duvar sırası "dış/iç" gives a crisper surface but weaker overhangs (keep "iç/dış" for overhang-heavy models); 0.16 or 0.12 mm layers reduce visible layer lines; `ironing_type=top` only smooths flat tops; `seam_position=back` hides the seam.
+- After reopening a CLI-sliced 3MF, confirm both Dış duvar fields in the GUI (checklist item 5).
 
 ## A1 mini design rules (0.4 nozzle)
 

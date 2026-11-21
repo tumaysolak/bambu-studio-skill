@@ -207,13 +207,14 @@ Varsayılanlar `0.20mm Standard @BBL A1M` profilinden okundu.
 | `raft_layers` | 0 | |
 | `seam_position` | aligned | nearest, back, random |
 | `ironing_type` | no ironing | top, topmost, solid |
-| `print_sequence` | by layer | by object (A1 mini'de kafa boşluğuna dikkat) |
+| `print_sequence` | by layer | by object (A1 mini'de kafa boşluğuna dikkat). Ayrı renkli ayrı nesnelerde şart: yoksa her katmanda renk değişir (108 değişim, 4 sa 25 dk yerine 58 dk) |
 | `enable_prime_tower` | 1 | Çok renkte gerekli |
 | `fuzzy_skin` | none | external, all |
 | `spiral_mode` | 0 | 1 = vazo modu |
 | `elefant_foot_compensation` | 0 | 0.1-0.15 geçmeli parçada |
 | `xy_hole_compensation` | 0 | Delik dar çıkıyorsa 0.1 |
-| `outer_wall_speed` | 200 | Görsel kalite için 120-150 |
+| `outer_wall_speed` | 200 | Pürüzsüz yüzey: 60-100 (GUI: Hız → Dış duvar) |
+| `outer_wall_acceleration` | 5000 | Pürüzsüz yüzey: 2500-3000 (GUI: Hız → İvme → Dış duvar). 35 mm kalpte 60/2500 = +4 % süre |
 | `curr_bed_type` | (tabla) | Textured PEI Plate, Cool Plate, Engineering Plate, High Temp Plate, Supertack Plate |
 
 Filament (`Bambu PLA Basic @BBL A1M`): nozul 220 °C, Dokulu PEI 65 °C, maks hacimsel hız 21 mm³/s, akış 0.98. PETG HF: 240 °C, tabla 70 °C, 18 mm³/s. A1 mini için 60 civarı hazır filament profili var (TPU 90A/95A, Generic PETG, PLA-CF, PVA dahil): `bambu_profiles.py list filament --filter A1M`.
