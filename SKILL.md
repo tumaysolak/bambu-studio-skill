@@ -46,6 +46,7 @@ Paths: `B=/Applications/BambuStudio.app/Contents/MacOS/BambuStudio`, `PY=~/bambu
 4. **Adhesion and support are mandatory decisions, never left on auto.** Two real failures: a leaf tip curled (thin tip) and a 173 mm ball holder lifted at a corner and was stopped (large footprint, designer had no raft/support). Before every print, from the `firstlayer` output:
    - thin tips → `brim_type=outer_only` (`auto_brim` often prints NO brim for PLA on Textured PEI);
    - footprint span >120 mm or contact >3000 mm² → `raft_layers=3` (or `brim_type=outer_only`, `brim_width=8` when raft marks matter) and leave ≥8 mm free around the part (scale down a few % if needed);
+   - **whenever a raft is used, set `raft_contact_distance=0.2`** (GUI: Destek → Raft → "Raft temas Z mesafesi" 0.2; `bambu_slice.py` now does it automatically). The preset 0.1 fuses the raft to the part: Hallo Baby (176 mm, Nov 2026) came off with the raft welded on and had to be frozen and peeled with pliers. Tell the user how to remove a raft: freezer 15-20 min, start at a lifted corner with a spatula, peel parallel to the surface, snip thin features (script text) instead of peeling;
    - always with either of the above: `initial_layer_speed=30`, `initial_layer_infill_speed=50`, and filament overrides `--fset close_fan_the_first_x_layers=3 --fset textured_plate_temp_initial_layer=70` (PLA on Textured PEI: fan off for the first 3 layers, plate +5 °C on the first layer only; verified in G-code: `M190 S70` then `M140 S65`). PETG: plate +5 °C over its preset, fan off 3 layers;
    - overhang >50 mm² → `enable_support=1`, `support_type=tree(auto)`, `support_on_build_plate_only=1`; skip only if the designer printed it support-free and the overhang is a low lip;
    - functional parts near the bed limits: prefer raft + support over saving 10 minutes.
@@ -70,6 +71,12 @@ Paths: `B=/Applications/BambuStudio.app/Contents/MacOS/BambuStudio`, `PY=~/bambu
 - GUI quirks: some dropdowns (e.g. "Yazdırma sırası") open off-screen; click the field, then press Down to step through options. Never type into the window unless a text field has focus: single keys are 3D-view shortcuts (`a` arranges all objects).
 - Several BambuStudio windows/instances may exist and a downloaded 3MF can replace the project in the window you were using; after any pause, confirm the window title before clicking.
 - Reopened CLI-sliced 3MFs can show preset values instead of your `--set` overrides in the GUI; verify in the GUI before printing (checklist item 5).
+- Max-size parts near the 180 mm limit: the CLI with tree support (and raft) can fail with exit 206 "no object fully inside" even when the mesh fits; do those in the GUI (import STL, set Destek/raft by hand, slice there). Translate origin-centred meshes to X/Y 90 before any CLI slice.
+- Make a large footprint fit: rotate around Z to minimise the axis-aligned box (convex-hull sweep in 0.5° steps; Splat Shelf 220 mm → 201 mm at 40°) before scaling down.
+- To edit geometry of an object already set up in the GUI, export the fixed STL and use right-click → "STL ile değiştir" (the menu scrolls; hover its bottom arrow). It keeps all process settings. Do not press `a` afterwards on a max-size part: arrange can push it off the plate (undo with cmd+Z).
+- Trimming a risky thin tip at the bed edge: cut at its neck with a manifold boolean box, then union a sphere (radius = half the neck width/height, flattened at z=0) so the end stays rounded instead of a flat cut face. Run `trimesh.repair.fill_holes` first so the boolean engine accepts the mesh.
+- Speed: switching the filament from "Generic PLA" to the actual "Bambu PLA Basic" profile (higher max volumetric speed) cut a print from 2h48 to 2h20; at 0.28 mm layers, line speeds above 200 mm/s gain nothing because flow is the limit. Ask which filament is loaded before tuning speed.
+- Multiple windows: if a click on the send button is refused as "desktop shell", grant Finder in computer-use access or maximise the window (Window → Doldur); minimise other Bambu windows with cmd+M to reach the one you need.
 
 ## Smooth outer surface (verified Nov 2026)
 

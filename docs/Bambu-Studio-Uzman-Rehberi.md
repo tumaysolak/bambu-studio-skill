@@ -267,6 +267,7 @@ osascript -e 'tell application "System Events" to tell process "BambuStudio" to 
 4. `mesh_tools.py firstlayer` çalıştır ve önerilerini uygula, otomatiğe bırakma:
    - ince uç varsa `brim_type=outer_only` (`auto_brim` PLA + Dokulu PEI'de genelde hiç brim basmaz);
    - taban 120 mm'den genişse ya da temas alanı 3000 mm²'yi geçiyorsa `raft_layers=3` (ya da `brim_type=outer_only`, `brim_width=8`), parçanın çevresinde en az 8 mm boşluk bırak, gerekirse modeli birkaç yüzde küçült;
+   - raft kullanılan her baskıda `raft_contact_distance=0.2` yap (GUI: Destek → Raft → "Raft temas Z mesafesi"). Varsayılan 0.1 raftı parçaya kaynatıyor (Hallo Baby, Kasım 2026);
    - bu durumların hepsinde `initial_layer_speed=30`, `initial_layer_infill_speed=50`; filament tarafında ilk 3 katmanda fan kapalı, ilk katmanda tabla +5 °C: `--fset close_fan_the_first_x_layers=3 --fset textured_plate_temp_initial_layer=70` (PLA + Dokulu PEI; G-code'da `M190 S70` sonra `M140 S65` görünür);
    - 45°'den dik sarkma 50 mm²'yi geçiyorsa `enable_support=1`, `support_type=tree(auto)`, `support_on_build_plate_only=1`.
    Gerçek örnekler: yaprak ucu kalktı (ince uç); 173 mm'lik top askısı köşeden kalktı, baskı durduruldu, raft + destek + yavaş ilk katmanla tekrar basıldı.
@@ -298,6 +299,7 @@ osascript -e 'tell application "System Events" to tell process "BambuStudio" to 
 | OpenSCAD yavaş | CGAL motoru | `--backend=manifold` |
 | İnce uç (yaprak ucu, sivri köşe) ilk katmanlarda kalkıp örümcek ağı gibi iplik oluyor, yazıcı hata vermiyor | Uç tablaya az alanla değiyor, kalkınca nozul sürüklüyor; A1 mini kalkan ucu algılamaz | Baskı devam edebilir, uç sonradan temizlenir. Sonraki baskıda `firstlayer` kontrolü, `brim_type=outer_only`, `initial_layer_speed=30`, tablayı deterjanla yıka |
 | Büyük parça köşeden kalkıyor (warping) | Geniş taban, kenarlar soğurken büzülüyor | `raft_layers=3` ya da 8 mm dış brim, ilk katman 30 mm/s, destek gerekiyorsa tree; tablayı deterjanla yıka |
+| Raft parçadan ayrılmıyor | Raft temas Z mesafesi 0.1 mm, raft parçaya kaynamış | 15-20 dk dondurucu, kalkık köşeden spatulayla başla, yüzeye paralel pense ile soy, ince yazıları kesici pense ile parça parça al; sonraki baskıda `raft_contact_distance=0.2` |
 | GUI'deki değerler CLI'de verdiğin `--set` değerlerinden farklı | Yeniden açılan 3MF'te GUI bazı değerleri ön ayardan okuyor | GUI'de elle düzelt, GUI'de dilimle, gramı karşılaştır |
 | "Anlık hızlandırılmış çekim yüzey kusuru" uyarısı | Timelapse açık | Gönder penceresinde Hızlandırılmış çekim: Off |
 | Tıklama başka uygulamaya gidiyor | Önde başka pencere (ör. Word) | Yeni ekran görüntüsü al, tekrar tıkla |

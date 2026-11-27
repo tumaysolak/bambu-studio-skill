@@ -89,6 +89,9 @@ def main():
 
     mach = bp.flatten("machine", a.printer, a.mset)
     proc = bp.flatten("process", a.process, a.set)
+    # Raft at the preset 0.1 mm contact distance welds to the part (Hallo Baby, Nov 2026).
+    if str(proc.get("raft_layers", "0")) not in ("0", "") and not any(k.startswith("raft_contact_distance=") for k in a.set):
+        proc["raft_contact_distance"] = "0.2"
     if a.plate:
         proc["curr_bed_type"] = a.plate
     n = len(filaments)
